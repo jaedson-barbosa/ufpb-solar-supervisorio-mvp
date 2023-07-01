@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api';
-	import { onDestroy, onMount } from 'svelte';
 
 	interface WeatherData {
 		wind_speed: number;
@@ -42,6 +41,7 @@
 		complete_data = { weather, trackers, inverters };
 		console.log(complete_data);
 	};
+	setInterval(() => load_data(), 5000);
 	load_data();
 </script>
 

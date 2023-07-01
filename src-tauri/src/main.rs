@@ -11,6 +11,15 @@ struct State {
 }
 
 #[derive(serde::Serialize)]
+struct TrackerData {
+    angle: f32,
+    motor_current: u16,
+    target_angle: f32,
+    temperature: i16,
+    state_of_charge: u8,
+}
+
+#[derive(serde::Serialize)]
 struct WeatherData {
     wind_speed: f32,
     wind_direction: f32,
@@ -22,6 +31,18 @@ struct WeatherData {
     dni: f32,
     precipitation: f32,
     gti: f32,
+}
+
+#[derive(serde::Serialize)]
+struct InverterData {
+    number_of_string: u16,
+    input_power: i32,
+    active_power: i32,
+    reactive_power: i32,
+    power_factor: i16,
+    efficiency: u16,
+    temperature: i16,
+    pv_voltage_current: [i16; 24],
 }
 
 fn read_f32(transport: &mut Transport, address: u16, quantity: u16) -> Vec<f32> {
@@ -80,26 +101,17 @@ fn request_weather_data(state: tauri::State<State>) -> WeatherData {
     let mut read_weather = |index| -> Vec<f32> { read_f32(&mut transport, index, 1) };
 
     WeatherData {
-        wind_speed: read_weather(119)[0],
+        wind_speed: read_weather(99)[0],
         wind_direction: read_weather(121)[0],
         relative_humidity: read_weather(15)[0],
-        temperature: read_weather(25)[0],
+        temperature: read_weather(27)[0],
         atmospheric_pressure: read_weather(35)[0],
         dhi: read_weather(45)[0],
         ghi: read_weather(55)[0],
         dni: read_weather(65)[0],
-        precipitation: read_weather(123)[0],
+        precipitation: read_weather(77)[0],
         gti: read_weather(79)[0],
     }
-}
-
-#[derive(serde::Serialize)]
-struct TrackerData {
-    angle: f32,
-    motor_current: u16,
-    target_angle: f32,
-    temperature: i16,
-    state_of_charge: u8,
 }
 
 fn request_tracker_data(transport: &mut Transport, tracker_index: u16) -> TrackerData {
@@ -127,18 +139,6 @@ fn request_trackers_data(state: tauri::State<State>) -> [TrackerData; 4] {
         request_tracker_data(&mut ncu_transport, 2),
         request_tracker_data(&mut ncu_transport, 3),
     ]
-}
-
-#[derive(serde::Serialize)]
-struct InverterData {
-    number_of_string: u16,
-    input_power: i32,
-    active_power: i32,
-    reactive_power: i32,
-    power_factor: i16,
-    efficiency: u16,
-    temperature: i16,
-    pv_voltage_current: [i16; 24],
 }
 
 fn request_inverter_data(transport: &mut Transport) -> InverterData {
